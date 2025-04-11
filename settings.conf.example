@@ -1,0 +1,16 @@
+[DEFAULT]
+# Snipe-IT API settings
+snipe_url = https://your-snipe-it-instance/api/v1
+snipe_token = YOUR_SNIPEIT_API_TOKEN
+
+# JAMF Pro API settings
+jamf_url = https://your.jamf.instance.com
+jamf_user = YOUR_JAMF_API_USER
+jamf_password = YOUR_JAMF_API_PASSWORD
+
+# Default org-level metadata
+site_id = 1
+company_id = 1
+
+# Optional: Microsoft Teams Webhook
+teams_webhook_url = https://outlook.office.com/webhook/your-webhook-url
