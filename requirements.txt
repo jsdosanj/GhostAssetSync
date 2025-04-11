@@ -1,1 +1,2 @@
 requests
+pyobjc-framework-SystemConfiguration; platform_system=="Darwin"
