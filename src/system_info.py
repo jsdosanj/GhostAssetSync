@@ -1,4 +1,7 @@
-import platform, subprocess, socket, uuid
+import platform
+import subprocess
+import socket
+import uuid
 
 def get_serial():
     try:
