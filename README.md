@@ -20,7 +20,7 @@
 
 ## 📁 Directory Structure
 
-```txt
+```
 GhostAssetSync/
 ├── ghostsync.py                # Main script (entrypoint)
 ├── settings.conf.example       # Configuration sample
@@ -32,15 +32,21 @@ GhostAssetSync/
 │   ├── snipeit_client.py       # Snipe-IT API wrapper
 │   ├── system_info.py          # Local OS info collector
 │   ├── utils.py                # Helper functions
+
 ```
 
 ⚙️ Setup
 1. Clone Repo
-``` git clone https://github.com/YOURORG/GhostAssetSync.git
-cd GhostAssetSync```
+```
+git clone https://github.com/YOURORG/GhostAssetSync.git
+cd GhostAssetSync
+```
 
 2. Configure Credentials
-``` cp settings.conf.example settings.conf```
+```
+cp settings.conf.example settings.conf
+```
+
 Edit settings.conf with:
 ```[DEFAULT]
 snipe_url = https://yoursnipe.it/api/v1
@@ -50,25 +56,30 @@ jamf_user = your_jamf_api_user
 jamf_password = your_jamf_api_password
 site_id = 1
 company_id = 1
-teams_webhook_url = https://outlook.office.com/webhook/XXXXXX```
+teams_webhook_url = https://outlook.office.com/webhook/XXXXXX
+```
 
 🚦 Usage
-```python ghostsync.py```
+```python ghostsync.py ```
 
 🔐 Packaging
 macOS .pkg
-```pyinstaller --onefile ghostsync.py
-productbuild --component dist/ghostsync /usr/local/bin GhostAssetSync.pkg```
+```
+pyinstaller --onefile ghostsync.py
+productbuild --component dist/ghostsync /usr/local/bin GhostAssetSync.pkg
+```
 Windows .msi
-```pyinstaller --onefile ghostsync.py
-# Use WiX Toolset or NSIS to wrap ghostsync.exe into an MSI```
+```
+pyinstaller --onefile ghostsync.py
+# Use WiX Toolset or NSIS to wrap ghostsync.exe into an MSI
+```
 Built binaries can be deployed silently via JAMF or GPO.
 
 📬 Teams Webhook Notifications (Optional)
 
 To enable Microsoft Teams integration:
-	1.	Add a webhook URL to your settings.conf under teams_webhook_url.
-	2.	The sync process will POST a message on:
+1. Add a webhook URL to your settings.conf under teams_webhook_url.
+2. The sync process will POST a message on:
 - Asset Created
 - Asset Updated
 - Errors/Failures
@@ -77,18 +88,3 @@ To enable Microsoft Teams integration:
 - Never commit settings.conf with real credentials.
 - Use settings.conf.example for version control.
 - Consider using environment variables or a secret manager in production.
-
-📜 License
-MIT – Use, modify, and conquer 🚀
----
-# ⚙️ **Phase II: Prebuilt Binaries**
-
-✅ These will be built using `pyinstaller` and wrapped:
-## 🪟 **Windows MSI Build Steps (done for you)**
-1. Build with PyInstaller:
-   ```bash
-   pyinstaller --onefile ghostsync.py```
-
-	2.	Package with WiX Toolset or NSIS into ghostsync.msi (or use Inno Setup):
-	•	Script defines: silent install, place in ```C:\Program Files\GhostAssetSync\ghostsync.exe```
-	•	Task scheduler/GPO can then call it on login
