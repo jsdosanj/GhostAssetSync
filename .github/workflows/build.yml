@@ -1,0 +1,66 @@
+name: Build and Release GhostAssetSync
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build on Ubuntu (Cross-Platform)
+    runs-on: ubuntu-latest
+
+    env:
+      PYTHONUNBUFFERED: 1
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: 🧰 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install Build Tools
+        run: |
+          sudo apt update
+          sudo apt install -y nsis zip
+          pip install pyinstaller
+
+      - name: 🔧 Build Binary (Linux → Windows EXE)
+        run: |
+          pyinstaller --onefile ghostsync.py
+
+      - name: 📝 Create NSIS Script
+        run: |
+          cat <<EOF > ghostsync.nsi
+          Outfile "GhostAssetSync.msi"
+          InstallDir "\\$PROGRAMFILES\\GhostAssetSync"
+          Page Directory
+          Section
+            SetOutPath \\$INSTDIR
+            File "dist\\ghostsync.exe"
+          SectionEnd
+          EOF
+
+      - name: 💽 Compile .msi Installer
+        run: makensis ghostsync.nsi
+
+      - name: 📄 Create README-INSTALL.txt
+        run: |
+          mkdir -p build_output
+          echo "GhostAssetSync Installer Files\n\nmacOS:\n- Build locally using macOS pkgbuild\n\nWindows:\n- GhostAssetSync.exe\n- GhostAssetSync.msi\n\nUsage:\nPlace settings.conf in same dir or %APPDATA%" > build_output/README-INSTALL.txt
+
+      - name: 📦 Package all assets into ZIP
+        run: |
+          cp dist/ghostsync.exe build_output/GhostAssetSync.exe
+          cp GhostAssetSync.msi build_output/
+          zip -r GhostAssetSync-Builds.zip build_output
+
+      - name: 🚀 Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: GhostAssetSync-Builds.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
