@@ -22,4 +22,4 @@ jamf_asset = next((j for j in jamf_assets if j.get('serial_number') == sys_info[
 # Step 3: Sync to Snipe
 sync_to_snipe(sys_info, jamf_asset, snipe, int(c["site_id"]), int(c["company_id"]))
 
-print("✅ GhostAssetSync Fusion complete.")
+print("GhostAssetSync Fusion complete.")
