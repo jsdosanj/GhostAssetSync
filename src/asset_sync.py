@@ -45,7 +45,7 @@ def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id):
         }
 
         if asset:
-            print(f"🔄 Updating existing asset [{serial}] in Snipe")
+            print(f"Updating existing asset [{serial}] in Snipe")
             payload = {
                 "name": hostname,
                 "custom_fields": custom_fields,
@@ -56,10 +56,10 @@ def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id):
             post_to_teams(
                 webhook_url,
                 f"Asset Updated: {hostname}",
-                f"✅ Updated asset with serial: `{serial}` and tag: `{asset['asset_tag']}`"
+                f"Updated asset with serial: `{serial}` and tag: `{asset['asset_tag']}`"
             )
         else:
-            print(f"➕ Creating new asset [{serial}] in Snipe")
+            print(f"Creating new asset [{serial}] in Snipe")
             asset_tag = generate_asset_tag(serial, hostname)
             model_id = snipe_client.find_or_create_model(system_info['os_name'])
 
@@ -79,9 +79,9 @@ def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id):
             post_to_teams(
                 webhook_url,
                 f"Asset Created: {hostname}",
-                f"🆕 Created new asset with serial: `{serial}` and tag: `{asset_tag}`"
+                f" Created new asset with serial: `{serial}` and tag: `{asset_tag}`"
             )
     except Exception as e:
-        error_msg = f"❌ Asset Sync Failed for `{hostname}` ({serial})\n```\n{str(e)}\n```"
+        error_msg = f" Asset Sync Failed for `{hostname}` ({serial})\n```\n{str(e)}\n```"
         print(error_msg)
-        post_to_teams(webhook_url, "Asset Sync Failed ❌", error_msg, color="FF0000")
+        post_to_teams(webhook_url, "Asset Sync Failed ", error_msg, color="FF0000")
