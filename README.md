@@ -1,24 +1,24 @@
 # GhostAssetSync
 
-🔗 **Cross-platform device asset sync tool that pulls system & JAMF info, and syncs it with Snipe-IT using your custom logic.**
+**Cross-platform device asset sync tool that pulls system & JAMF info, and syncs it with Snipe-IT using your custom logic.**
 
 ---
 
-## 🚀 Features
+## Features
 
-- ✅ Gathers local device info: Serial, OS, Hostname, MAC, Logged-in Users
-- ✅ Queries JAMF Pro API for existing record
-- ✅ Matches or creates assets in Snipe-IT (based on Serial Number)
-- ✅ If `asset_tag` is blank, auto-generates one from hostname or fallback to `CASID-<serial>`
-- ✅ Enforces Snipe-IT as source-of-truth (syncs `asset_tag` back to JAMF if needed)
-- ✅ Fully cross-platform: macOS & Windows
-- ✅ Deployable via JAMF, GPO, SCCM, Intune, etc.
-- ✅ Packaged as `.msi` for Windows, `.pkg` for macOS
-- ✅ Microsoft Teams webhook support for sync notifications
+- Gathers local device info: Serial, OS, Hostname, MAC, Logged-in Users
+- Queries JAMF Pro API for existing record
+- Matches or creates assets in Snipe-IT (based on Serial Number)
+- If `asset_tag` is blank, auto-generates one from hostname or fallback to `CASID-<serial>`
+- Enforces Snipe-IT as source-of-truth (syncs `asset_tag` back to JAMF if needed)
+- Fully cross-platform: macOS & Windows
+- Deployable via JAMF, GPO, SCCM, Intune, etc.
+- Packaged as `.msi` for Windows, `.pkg` for macOS
+- Microsoft Teams webhook support for sync notifications
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```
 GhostAssetSync/
@@ -35,7 +35,7 @@ GhostAssetSync/
 
 ```
 
-⚙️ Setup
+Setup
 1. Clone Repo
 ```
 git clone https://github.com/YOURORG/GhostAssetSync.git
@@ -59,10 +59,10 @@ company_id = 1
 teams_webhook_url = https://outlook.office.com/webhook/XXXXXX
 ```
 
-🚦 Usage
+ Usage
 ```python ghostsync.py ```
 
-🔐 Packaging
+ Packaging
 macOS .pkg
 ```
 pyinstaller --onefile ghostsync.py
@@ -75,7 +75,7 @@ pyinstaller --onefile ghostsync.py
 ```
 Built binaries can be deployed silently via JAMF or GPO.
 
-📬 Teams Webhook Notifications (Optional)
+ Teams Webhook Notifications (Optional)
 
 To enable Microsoft Teams integration:
 1. Add a webhook URL to your settings.conf under teams_webhook_url.
@@ -84,7 +84,7 @@ To enable Microsoft Teams integration:
 - Asset Updated
 - Errors/Failures
 
-🧼 Best Practices
+ Best Practices
 - Never commit settings.conf with real credentials.
 - Use settings.conf.example for version control.
 - Consider using environment variables or a secret manager in production.
