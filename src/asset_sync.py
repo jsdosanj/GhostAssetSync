@@ -14,24 +14,16 @@ def post_to_teams(webhook_url, title, message, color="00FF00"):
         "text": message
     }
     try:
-        r = requests.post(webhook_url, json=payload)
+        r = requests.post(webhook_url, json=payload, timeout=15)
         r.raise_for_status()
     except Exception as e:
         print(f"[Teams Alert Error] {e}")
 
-def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id):
+def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id, webhook_url=""):
     serial = system_info['serial']
     hostname = system_info['hostname']
-    webhook_url = os.getenv("TEAMS_WEBHOOK_URL", "")
-
-    # Try to get from config if ENV not set
-    try:
-        import configparser
-        config = configparser.ConfigParser()
-        config.read("settings.conf")
-        webhook_url = webhook_url or config.get("DEFAULT", "teams_webhook_url", fallback="")
-    except:
-        pass
+    # Allow env var to override
+    webhook_url = os.getenv("TEAMS_WEBHOOK_URL", "") or webhook_url
 
     try:
         asset = snipe_client.find_asset_by_serial(serial)

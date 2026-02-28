@@ -1,4 +1,4 @@
-name: Build Windows Executable and MSI
+name: Build GhostAssetSync Releases
 
 on:
   push:
@@ -7,54 +7,83 @@ on:
 
 jobs:
   build-windows:
-    name: Build GhostAssetSync for Windows
-    runs-on: ubuntu-latest
+    name: Build Windows Executable
+    runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name:  Setup Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name:  Install dependencies
+      - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y nsis wine64 zip
+          pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build Windows EXE with PyInstaller via Wine
-        run: |
-          pyinstaller --onefile ghostsync.py
+      - name: Build EXE with PyInstaller
+        run: pyinstaller --onefile ghostsync.py
 
-      - name:  Create NSIS Installer Script
-        run: |
-          echo 'Outfile "GhostAssetSync.msi"
-          InstallDir "$PROGRAMFILES\\GhostAssetSync"
-          Page Directory
-          Section
-            SetOutPath $INSTDIR
-            File "dist\\ghostsync.exe"
-          SectionEnd' > ghostsync.nsi
-
-      - name:  Build MSI using NSIS
-        run: |
-          makensis ghostsync.nsi
-
-      - name:  Package ZIP
+      - name: Package release
         run: |
           mkdir release
-          cp dist/ghostsync.exe release/GhostAssetSync.exe
-          cp GhostAssetSync.msi release/
-          cp settings.conf.example release/
-          echo "Run GhostAssetSync.exe or install via GhostAssetSync.msi" > release/README-INSTALL.txt
-          zip -r GhostAssetSync-Builds.zip release/
+          copy dist\ghostsync.exe release\GhostAssetSync.exe
+          copy settings.conf.example release\
+          echo Run GhostAssetSync.exe after configuring settings.conf > release\README-INSTALL.txt
+        shell: cmd
 
-      - name: Upload Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: GhostAssetSync-Builds.zip
+          name: GhostAssetSync-Windows
+          path: release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/GhostAssetSync.exe
+            release/settings.conf.example
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    name: Build macOS Executable
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build binary with PyInstaller
+        run: pyinstaller --onefile ghostsync.py
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GhostAssetSync-macOS
+          path: dist/ghostsync
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ghostsync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -8,7 +8,7 @@ def get_serial():
         if platform.system() == "Windows":
             return subprocess.check_output("wmic bios get serialnumber", shell=True).decode().split("\n")[1].strip()
         return subprocess.check_output("system_profiler SPHardwareDataType | awk '/Serial/ {print $4}'", shell=True).decode().strip()
-    except:
+    except Exception:
         return "UNKNOWN"
 
 def get_mac_address():
@@ -18,7 +18,7 @@ def get_mac_address():
 def get_logged_in_users():
     try:
         return subprocess.check_output("query user" if platform.system() == "Windows" else "users", shell=True).decode().strip()
-    except:
+    except Exception:
         return "UNKNOWN"
 
 def collect_system_info():
