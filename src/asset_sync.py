@@ -1,43 +1,64 @@
 import os
+import re
+import logging
 import requests
 from src.utils import generate_asset_tag
 
+logger = logging.getLogger(__name__)
+
+MAX_TEAMS_MSG_LEN = 2000
+
+
+def _sanitize(value, max_len=255):
+    """Remove control characters and truncate."""
+    if not isinstance(value, str):
+        value = str(value)
+    cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', value)
+    return cleaned[:max_len]
+
+
 def post_to_teams(webhook_url, title, message, color="00FF00"):
     if not webhook_url:
-        return  # silently skip if not configured
+        return
+    if not webhook_url.startswith("https://"):
+        logger.warning("Teams webhook URL must use HTTPS — skipping notification")
+        return
     payload = {
         "@type": "MessageCard",
         "@context": "https://schema.org/extensions",
-        "summary": title,
+        "summary": _sanitize(title, 200),
         "themeColor": color,
-        "title": title,
-        "text": message
+        "title": _sanitize(title, 200),
+        "text": _sanitize(message, MAX_TEAMS_MSG_LEN)
     }
     try:
         r = requests.post(webhook_url, json=payload, timeout=15)
         r.raise_for_status()
     except Exception as e:
-        print(f"[Teams Alert Error] {e}")
+        logger.error("Teams webhook POST failed: %s", e)
+
 
 def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id, webhook_url=""):
-    serial = system_info['serial']
-    hostname = system_info['hostname']
-    # Allow env var to override
+    serial = _sanitize(system_info.get('serial', 'UNKNOWN'))
+    hostname = _sanitize(system_info.get('hostname', 'UNKNOWN'))
     webhook_url = os.getenv("TEAMS_WEBHOOK_URL", "") or webhook_url
 
     try:
         asset = snipe_client.find_asset_by_serial(serial)
 
         custom_fields = {
-            "Operating System": system_info['os_name'],
-            "OS Version": system_info['os_version'],
-            "OS Build": system_info['os_build'],
-            "MAC Address": system_info['mac_address'],
-            "Logged In Users": system_info['logged_in_users'],
+            "Operating System": _sanitize(system_info.get('os_name', '')),
+            "OS Version": _sanitize(system_info.get('os_version', '')),
+            "OS Build": _sanitize(system_info.get('os_build', '')),
+            "MAC Address": _sanitize(system_info.get('mac_address', '')),
+            "Logged In Users": _sanitize(system_info.get('logged_in_users', '')),
         }
 
         if asset:
-            print(f"Updating existing asset [{serial}] in Snipe")
+            if not isinstance(asset, dict) or "id" not in asset or "asset_tag" not in asset:
+                raise ValueError("Snipe-IT returned an asset with missing 'id' or 'asset_tag' fields")
+
+            logger.info("Updating existing asset [****%s] in Snipe-IT", serial[-4:])
             payload = {
                 "name": hostname,
                 "custom_fields": custom_fields,
@@ -48,12 +69,12 @@ def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id, we
             post_to_teams(
                 webhook_url,
                 f"Asset Updated: {hostname}",
-                f"Updated asset with serial: `{serial}` and tag: `{asset['asset_tag']}`"
+                f"Updated asset with serial: `****{serial[-4:]}` and tag: `{_sanitize(asset['asset_tag'])}`"
             )
         else:
-            print(f"Creating new asset [{serial}] in Snipe")
+            logger.info("Creating new asset [****%s] in Snipe-IT", serial[-4:])
             asset_tag = generate_asset_tag(serial, hostname)
-            model_id = snipe_client.find_or_create_model(system_info['os_name'])
+            model_id = snipe_client.find_or_create_model(system_info.get('os_name', 'Unknown'))
 
             payload = {
                 "name": hostname,
@@ -71,9 +92,14 @@ def sync_to_snipe(system_info, jamf_asset, snipe_client, site_id, company_id, we
             post_to_teams(
                 webhook_url,
                 f"Asset Created: {hostname}",
-                f" Created new asset with serial: `{serial}` and tag: `{asset_tag}`"
+                f"Created new asset with serial: `****{serial[-4:]}` and tag: `{asset_tag}`"
             )
     except Exception as e:
-        error_msg = f" Asset Sync Failed for `{hostname}` ({serial})\n```\n{str(e)}\n```"
-        print(error_msg)
-        post_to_teams(webhook_url, "Asset Sync Failed ", error_msg, color="FF0000")
+        logger.error("Asset sync failed for [****%s]: %s", serial[-4:], e)
+        # Send generic message to Teams — do NOT leak stack traces
+        post_to_teams(
+            webhook_url,
+            "Asset Sync Failed",
+            f"Sync failed for host `{hostname}`. Check local logs for details.",
+            color="FF0000"
+        )

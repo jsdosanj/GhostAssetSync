@@ -1,9 +1,20 @@
 [DEFAULT]
-# Snipe-IT API settings
+# ============================================================
+# GhostAssetSync Configuration
+# SECURITY: This file contains sensitive credentials.
+#   - Never commit this file to version control
+#   - Set permissions: chmod 600 settings.conf
+#   - Prefer environment variables in production:
+#     GHOST_SNIPE_URL, GHOST_SNIPE_TOKEN,
+#     GHOST_JAMF_URL, GHOST_JAMF_USER, GHOST_JAMF_PASSWORD,
+#     TEAMS_WEBHOOK_URL
+# ============================================================
+
+# Snipe-IT API settings (MUST be HTTPS)
 snipe_url = https://your-snipe-it-instance/api/v1
 snipe_token = YOUR_SNIPEIT_API_TOKEN
 
-# JAMF Pro API settings
+# JAMF Pro API settings (MUST be HTTPS)
 jamf_url = https://your.jamf.instance.com
 jamf_user = YOUR_JAMF_API_USER
 jamf_password = YOUR_JAMF_API_PASSWORD
@@ -12,5 +23,5 @@ jamf_password = YOUR_JAMF_API_PASSWORD
 site_id = 1
 company_id = 1
 
-# Optional: Microsoft Teams Webhook
+# Optional: Microsoft Teams Webhook (MUST be HTTPS)
 teams_webhook_url = https://outlook.office.com/webhook/your-webhook-url
