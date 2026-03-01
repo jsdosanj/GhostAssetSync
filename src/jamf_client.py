@@ -1,14 +1,19 @@
 import logging
 import requests
 from requests.auth import HTTPBasicAuth
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
+
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 class JamfClient:
     def __init__(self, url, user, password):
         self.base_url = url.rstrip('/')
-        if not self.base_url.startswith("https://") and "localhost" not in self.base_url and "127.0.0.1" not in self.base_url:
+        parsed = urlparse(self.base_url)
+        if not (parsed.scheme == "https" or
+                (parsed.scheme in ("http", "") and parsed.hostname in _LOCAL_HOSTS)):
             raise ValueError(f"JAMF URL must use HTTPS: {self.base_url}")
         self.session = requests.Session()
         self.session.auth = HTTPBasicAuth(user, password)

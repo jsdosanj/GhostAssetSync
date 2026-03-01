@@ -9,8 +9,16 @@ def extract_asset_tag_from_name(name):
 
 
 def generate_asset_tag(serial, hostname):
-    if not isinstance(serial, str) or len(serial) < 6:
-        serial = "000000"
     if not isinstance(hostname, str):
         hostname = ""
-    return extract_asset_tag_from_name(hostname) or f"CASID-{serial[-6:]}"
+
+    hostname_tag = extract_asset_tag_from_name(hostname)
+    if hostname_tag:
+        return hostname_tag
+
+    if not isinstance(serial, str):
+        serial = str(serial) if serial is not None else ""
+
+    # Use the last 6 characters of the serial, zero-padding if it is shorter than 6
+    normalized_serial = serial[-6:].zfill(6) if serial else "000000"
+    return f"CASID-{normalized_serial}"

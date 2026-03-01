@@ -1,14 +1,18 @@
 import logging
 import requests
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 logger = logging.getLogger(__name__)
+
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 class SnipeClient:
     def __init__(self, base_url, token):
         self.base_url = base_url.rstrip('/')
-        if not self.base_url.startswith("https://") and "localhost" not in self.base_url and "127.0.0.1" not in self.base_url:
+        parsed = urlparse(self.base_url)
+        if not (parsed.scheme == "https" or
+                (parsed.scheme in ("http", "") and parsed.hostname in _LOCAL_HOSTS)):
             raise ValueError(f"Snipe-IT URL must use HTTPS: {self.base_url}")
         self.session = requests.Session()
         self.session.headers.update({

@@ -6,6 +6,7 @@ import logging
 import os
 import stat
 import sys
+from urllib.parse import urlparse
 
 from src.system_info import collect_system_info
 from src.jamf_client import JamfClient
@@ -21,9 +22,13 @@ logger = logging.getLogger(__name__)
 
 
 def _validate_url(url, name):
-    if not url.startswith("https://") and "localhost" not in url and "127.0.0.1" not in url:
-        logger.error("[SECURITY] %s must use HTTPS: %s", name, url)
-        sys.exit(1)
+    parsed = urlparse(url)
+    if parsed.scheme == "https":
+        return
+    if parsed.scheme in ("http", "") and parsed.hostname in ("localhost", "127.0.0.1", "::1"):
+        return
+    logger.error("[SECURITY] %s must use HTTPS: %s", name, url)
+    sys.exit(1)
 
 
 def main():
