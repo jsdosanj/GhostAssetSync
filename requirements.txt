@@ -1,2 +1,2 @@
-requests
-pyobjc-framework-SystemConfiguration; platform_system=="Darwin"
+requests>=2.31.0,<3.0.0
+pyobjc-framework-SystemConfiguration>=10.0; platform_system=="Darwin"

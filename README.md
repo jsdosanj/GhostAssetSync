@@ -152,8 +152,15 @@ The sync process will POST a notification card on:
 
 ## Environment Variables
 
+All secrets can be supplied via environment variables (these take precedence over `settings.conf`):
+
 | Variable | Description |
 |----------|-------------|
+| `GHOST_JAMF_URL` | Overrides `jamf_url` from `settings.conf` |
+| `GHOST_JAMF_USER` | Overrides `jamf_user` from `settings.conf` |
+| `GHOST_JAMF_PASSWORD` | Overrides `jamf_password` from `settings.conf` |
+| `GHOST_SNIPE_URL` | Overrides `snipe_url` from `settings.conf` |
+| `GHOST_SNIPE_TOKEN` | Overrides `snipe_token` from `settings.conf` |
 | `TEAMS_WEBHOOK_URL` | Overrides `teams_webhook_url` from `settings.conf` |
 
 ---
@@ -176,9 +183,14 @@ Double-check `jamf_user`, `jamf_password`, and `snipe_token` in `settings.conf`.
 
 ## Security
 
+- **Config file permissions**: On Unix, `settings.conf` must not be world-readable. Run `chmod 600 settings.conf` after creation. GhostAssetSync will refuse to start if the file is world-readable, and warns if it is group-readable.
+- **Environment variables**: In production, supply all secrets via environment variables (`GHOST_JAMF_URL`, `GHOST_JAMF_USER`, `GHOST_JAMF_PASSWORD`, `GHOST_SNIPE_URL`, `GHOST_SNIPE_TOKEN`, `TEAMS_WEBHOOK_URL`) instead of storing them in `settings.conf`.
+- **HTTPS enforcement**: All API URLs (Snipe-IT, JAMF Pro, Teams webhook) must use HTTPS. The tool will refuse to start or skip notifications if HTTP is used (localhost/127.0.0.1 are exempt for local development).
+- **Serial number masking**: Serial numbers are masked in log output and Teams notifications (only the last 4 characters are shown). Full serial is available at DEBUG log level only.
+- **No stack trace leakage**: Error details are logged locally only. Teams failure notifications send a generic message without exposing internal error details.
+- **Reporting vulnerabilities**: Please open a GitHub issue marked `[SECURITY]` or contact the repository owner directly. Do not disclose security vulnerabilities publicly until a fix is available.
 - Never commit `settings.conf` with real credentials — it is listed in `.gitignore`.
 - Use `settings.conf.example` for version control.
-- Consider using environment variables or a secret manager in production.
 
 ---
 
